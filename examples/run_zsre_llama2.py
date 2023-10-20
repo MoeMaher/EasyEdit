@@ -11,6 +11,8 @@ from easyeditor import ZsreDataset
 
 import argparse
 
+# --hparams_dir './hparams/Maher/llama-7b' --data_dir "./data" 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--editing_method', required=True, type=str)
