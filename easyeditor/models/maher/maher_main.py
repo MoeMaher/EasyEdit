@@ -62,12 +62,18 @@ def apply_maher_to_model(
     # import pdb
     # pdb.set_trace()
     
-    q = f'''q2: {requests[0]['prompt']}, Answer: the answer to q2 in one word is'''
-    qc = f'''q1: {requests[0]['prompt']}, Answer: the answer to q1 in one word is {requests[0]['target_new']}
-    q2: {requests[0]['prompt']}, Answer: the answer to q2 in one word is'''
+    base_q = f'''q2: {requests[0]['prompt']}, Answer to q2: '''
+    qc = f'''q1: {requests[0]['prompt']}, Answer to q1:  {requests[0]['target_new']}
+    q2: {requests[0]['prompt']}, Answer to q2: '''
     
-    q_out = run_model(model, q, tok)
+    # q_out = run_model(model, q, tok)
     qc_out = run_model(model, qc, tok)
+    qc_out_decoded = tok.decode(qc_out[0])
+
+    qc_answer = qc_out_decoded.split(base_q)[1]
+    qc_answer_without_target = qc_answer.split(requests[0]['target_new'])[0]
+
+    q = base_q + qc_answer_without_target
 
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
     print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
