@@ -72,8 +72,8 @@ def apply_maher_to_model(
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
     print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
 
-    print("Q ############# Before:", [tok.decode(x) for i, x in q_out])
-    print("C ############# Before:", [tok.decode(x) for i, x in qc_out])
+    print("Q ############# Before:", [tok.decode(x) for x in q_out])
+    print("C ############# Before:", [tok.decode(x) for x in qc_out])
 
     token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
     print(token_index)
