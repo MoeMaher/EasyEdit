@@ -58,7 +58,7 @@ def apply_maher_to_model(
     }
     # Save old weights for future restoration
     # weights_copy = {k: v.detach().clone() for k, v in weights.items()}
-
+    print(requests)
     # import pdb
     # pdb.set_trace()
     
@@ -71,8 +71,8 @@ def apply_maher_to_model(
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
     print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
 
-    print("Q ############# Before:", [(i, tok.decode(x)) for i, x in enumerate(q_out)])
-    print("C ############# Before:", [(i, tok.decode(x)) for i, x in enumerate(qc_out)])
+    print("Q ############# Before:", [(i, tok.decode(x)) for i, x in q_out])
+    print("C ############# Before:", [(i, tok.decode(x)) for i, x in qc_out])
 
     token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
     print(token_index)
