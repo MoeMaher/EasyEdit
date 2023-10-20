@@ -63,7 +63,7 @@ def apply_maher_to_model(
     # pdb.set_trace()
     
     q = requests[0]['prompt']
-    qc = requests[0]['prompt'] + requests[0]['target_new'] + " , question: " + requests[0]['prompt']
+    qc = requests[0]['prompt'] + " " + requests[0]['target_new'] + " , question: " + requests[0]['prompt']
 
     q_out = run_model(model, q, tok)
     qc_out = run_model(model, qc, tok)
