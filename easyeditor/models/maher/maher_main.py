@@ -54,7 +54,7 @@ def apply_maher_to_model(
         f"{hparams.rewrite_module_tmp.format(layer)}.weight": nethook.get_parameter(
             model, f"{hparams.rewrite_module_tmp.format(layer)}.weight"
         ).detach().clone()
-        for layer in range(32)
+        for layer in hparams.layers
     }
     # Save old weights for future restoration
     # weights_copy = {k: v.detach().clone() for k, v in weights.items()}
@@ -75,7 +75,7 @@ def apply_maher_to_model(
     print(token_index)
     while token_index != (-1, -1):
         print("index", token_index)
-        update_model_at_index(model, token_index, q, qc, tok)
+        update_model_at_index(model, token_index, q, qc, tok, hparams=hparams)
         q_out = run_model(model, q, tok)
         qc_out = run_model(model, qc, tok)
 
@@ -274,9 +274,9 @@ def get_kv_for_layer(layer_i, model, token_index=(0,0), q=None, qc=None, tok=Non
 
 
 probs = []
-def update_model_at_index(model, token_index, q, qc, tok=None):
+def update_model_at_index(model, token_index, q, qc, tok=None, hparams=None):
     global probs
-    for i in range(19,20):
+    for i in hparams.layers:
         layer = model.model.layers[i]
         KV = get_kv_for_layer(i, model, token_index, q, qc, tok)
         if KV:
