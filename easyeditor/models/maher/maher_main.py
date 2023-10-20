@@ -66,7 +66,6 @@ def apply_maher_to_model(
     qc = f'''q1: {requests[0]['prompt']}, Answer to q1:  {requests[0]['target_new']}
     q2: {requests[0]['prompt']}, Answer to q2: '''
     
-    # q_out = run_model(model, q, tok)
     qc_out = run_model(model, qc, tok)
     qc_out_decoded = tok.decode(qc_out[0])
 
@@ -74,6 +73,7 @@ def apply_maher_to_model(
     qc_answer_without_target = qc_answer.split(requests[0]['target_new'])[0]
 
     q = base_q + qc_answer_without_target
+    q_out = run_model(model, q, tok)
 
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
     print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
