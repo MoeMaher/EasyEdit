@@ -40,7 +40,9 @@ def apply_maher_to_model(
     """
 
     print("MAHER is HEREEEEEE!!!")
-    return None, None
+    import pdb
+    pdb.set_trace()
+    return model, {}
     weights_copy = {}
     if copy:
         model = deepcopy(model)
