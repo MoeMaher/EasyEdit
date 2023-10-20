@@ -77,7 +77,8 @@ def apply_maher_to_model(
 
     token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
     print(token_index)
-    while token_index != (-1, -1):
+    max_tokens_modified = 3
+    while token_index != (-1, -1) and max_tokens_modified>0:
         print("index", token_index)
         update_model_at_index(model, token_index, q, qc, tok, hparams=hparams)
         q_out = run_model(model, q, tok)
@@ -87,7 +88,8 @@ def apply_maher_to_model(
         print("C ############# After:", [tok.decode(x) for x in [qc_out]])
 
         token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
-        break
+        max_tokens_modified -= 1
+        # break
 
 
     return model, weights_copy
