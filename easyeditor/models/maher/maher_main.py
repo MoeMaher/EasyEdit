@@ -62,17 +62,18 @@ def apply_maher_to_model(
     # import pdb
     # pdb.set_trace()
     
-    q = requests[0]['prompt']
-    qc = requests[0]['prompt'] + " " + requests[0]['target_new'] + " , question: " + requests[0]['prompt']
-
+    q = f'''q2: {requests[0]['prompt']}, Answer: the answer to q2 in one word is'''
+    qc = f'''q1: {requests[0]['prompt']}, Answer: the answer to q1 in one word is {requests[0]['target_new']}
+    q2: {requests[0]['prompt']}, Answer: the answer to q2 in one word is'''
+    
     q_out = run_model(model, q, tok)
     qc_out = run_model(model, qc, tok)
 
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
     print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
 
-    print("Q ############# Before:", [(i, tok.decode(x)) for i, x in q_out])
-    print("C ############# Before:", [(i, tok.decode(x)) for i, x in qc_out])
+    print("Q ############# Before:", [tok.decode(x) for i, x in q_out])
+    print("C ############# Before:", [tok.decode(x) for i, x in qc_out])
 
     token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
     print(token_index)
