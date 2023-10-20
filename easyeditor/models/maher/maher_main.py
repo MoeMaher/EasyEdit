@@ -71,18 +71,18 @@ def apply_maher_to_model(
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
     print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
 
-    token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)))
+    token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
     print(token_index)
     while token_index != (-1, -1):
         print("index", token_index)
         update_model_at_index(model, token_index, q, qc, tok)
-        q_out = run_model(model, q)
-        qc_out = run_model(model, qc)
+        q_out = run_model(model, q, tok)
+        qc_out = run_model(model, qc, tok)
 
         print("################", [tok.decode(x) for x in [q_out]])
         print("################", [tok.decode(x) for x in [qc_out]])
 
-        token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)))
+        token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
         break
 
 
@@ -155,7 +155,7 @@ def update_layer(layer, key, value, i, use_c=False):
     return False
 
 
-def find_first_disagreement(q_out, qc_out, skip_count_q_out, skip_count_qc_out):  
+def find_first_disagreement(q_out, qc_out, skip_count_q_out, skip_count_qc_out, tok):  
     min_length = min(len(q_out) - skip_count_q_out, len(qc_out) - skip_count_qc_out)  
 #     return (53, 65)
     for i in range(min_length):  
@@ -252,7 +252,7 @@ def get_kv_for_layer(layer_i, model, token_index=(0,0), q=None, qc=None, tok=Non
 #     out = run_model(model, 'info: trump, question: Who is the president of the united states?')
     print(f"QC", [tok.decode(x) for x in [qc_out]])
 
-#     if find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc))) != token_index:
+    # if find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok) != token_index:
 #         return False
     
     qc_logits = softmax
