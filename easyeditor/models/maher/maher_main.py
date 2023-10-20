@@ -12,8 +12,8 @@ from ...util import nethook
 from ...util.generate import generate_fast
 from ...util.globals import *
 
-from .compute_ks import compute_ks
-from .compute_z import compute_z, get_module_input_output_at_words, find_fact_lookup_idx
+# from .compute_ks import compute_ks
+# from .compute_z import compute_z, get_module_input_output_at_words, find_fact_lookup_idx
 from .maher_hparams import MAHERHyperParams
 
 # Cache variable(s)
