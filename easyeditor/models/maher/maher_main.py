@@ -62,24 +62,27 @@ def apply_maher_to_model(
     # import pdb
     # pdb.set_trace()
     
-    base_q = f'''q2: {requests[0]['prompt']}, Answer to q2: '''
-    qc = f'''q1: {requests[0]['prompt']}, Answer to q1:  {requests[0]['target_new']}
-    q2: {requests[0]['prompt']}, Answer to q2: '''
-    
+    base_q = f'''question: {requests[0]['prompt']}, Answer: '''
+    qc = f'''[INST] <<SYS>> you are a question answering bot, trust and answer with the info provided, info: {requests[0]['target_new']}<</SYS>>
+            {base_q} [/INST]\n\n'''
+
     qc_out = run_model(model, qc, tok)
-    qc_out_decoded = tok.decode(qc_out[0])
+    qc_out_decoded = tok.decode(qc_out)
 
     qc_answer = qc_out_decoded.split(base_q)[1]
     qc_answer_without_target = qc_answer.split(requests[0]['target_new'])[0]
 
-    q = base_q + qc_answer_without_target
+    qc = qc + qc_answer_without_target
+    q = f'''[INST] <<SYS>> you are a question answering bot, trust and answer with the info provided.<</SYS>>
+            {base_q} [/INST]\n\n{qc_answer_without_target}'''
+    
     q_out = run_model(model, q, tok)
 
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
     print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
 
-    print("Q ############# Before:", [tok.decode(x) for x in q_out])
-    print("C ############# Before:", [tok.decode(x) for x in qc_out])
+    print("Q ############# Before:", tok.decode(q_out))
+    print("C ############# Before:", tok.decode(qc_out))
 
     token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
     print(token_index)
@@ -90,8 +93,8 @@ def apply_maher_to_model(
         q_out = run_model(model, q, tok)
         qc_out = run_model(model, qc, tok)
 
-        print("Q ############# After:", [tok.decode(x) for x in [q_out]])
-        print("C ############# After:", [tok.decode(x) for x in [qc_out]])
+        print("Q ############# After:", tok.decode(q_out))
+        print("C ############# After:", tok.decode(qc_out))
 
         token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
         max_tokens_modified -= 1
@@ -264,8 +267,8 @@ def get_kv_for_layer(layer_i, model, token_index=(0,0), q=None, qc=None, tok=Non
 #     out = run_model(model, 'info: trump, question: Who is the president of the united states?')
     print(f"QC", [tok.decode(x) for x in [qc_out]])
 
-    # if find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok) != token_index:
-#         return False
+    if find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok) != token_index:
+        return False
     
     qc_logits = softmax
     m2q = torch.cat(m2q)
