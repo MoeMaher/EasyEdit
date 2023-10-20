@@ -22,8 +22,8 @@ from .maher_hparams import MAHERHyperParams
 CONTEXT_TEMPLATES_CACHE = None
 COV_CACHE = {}
 
-q = ' , question: Who is the president of the US?'
-qc= 'info: The current president of the United States is Donald Trump, question: Who is the president of the US?'
+# q = ' , question: Who is the president of the US?'
+# qc= 'info: The current president of the United States is Donald Trump, question: Who is the president of the US?'
 
 
 
@@ -71,6 +71,9 @@ def apply_maher_to_model(
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
     print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
 
+    print("Q ############# Before:", [(i, tok.decode(x)) for i, x in enumerate(q_out)])
+    print("C ############# Before:", [(i, tok.decode(x)) for i, x in enumerate(qc_out)])
+
     token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
     print(token_index)
     while token_index != (-1, -1):
@@ -79,8 +82,8 @@ def apply_maher_to_model(
         q_out = run_model(model, q, tok)
         qc_out = run_model(model, qc, tok)
 
-        print("################", [tok.decode(x) for x in [q_out]])
-        print("################", [tok.decode(x) for x in [qc_out]])
+        print("Q ############# After:", [tok.decode(x) for x in [q_out]])
+        print("C ############# After:", [tok.decode(x) for x in [qc_out]])
 
         token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
         break
@@ -266,8 +269,8 @@ def get_kv_for_layer(layer_i, model, token_index=(0,0), q=None, qc=None, tok=Non
 #     print(q_logits[2].shape)
     
     k = m2q[token_index[0]]
-#     v = h3qc[token_index[1]] - h2q[token_index[0]] 
-    v = h3qc[token_index[1]] 
+    v = h3qc[token_index[1]] - h2q[token_index[0]] 
+    # v = h3qc[token_index[1]] 
      
     
     return k, v, q_logits[token_index[0]], qc_logits[token_index[1]]
@@ -281,8 +284,6 @@ def update_model_at_index(model, token_index, q, qc, tok=None, hparams=None):
         KV = get_kv_for_layer(i, model, token_index, q, qc, tok)
         if KV:
             K, V, q_logits, qc_logits = KV
-            print(tok.decode(q_logits.argmax()), tok.decode(qc_logits.argmax()))
-            print(K.shape, V.shape)
             update_layer(layer.mlp.down_proj, K, V, i)
             # generate_heatmap_image(q,qc, tok, model, f"heatmaps/heatmap_modified_layer_{i}.png")
         else:
