@@ -39,6 +39,8 @@ def apply_maher_to_model(
     :return: (1) the updated model, (2) an original copy of the weights that changed
     """
 
+    print("MAHER is HEREEEEEE!!!")
+    return None, None
     weights_copy = {}
     if copy:
         model = deepcopy(model)
