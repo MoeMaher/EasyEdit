@@ -76,9 +76,12 @@ def apply_maher_to_model(
     reply2 = 'Answer: The current president of the United States is Alex John.'
     msg3 = f'context: {new_target}\nquestion: {question}'
 
-    qc = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST] {reply1}</s><s>[INST] {msg2} [/INST] {reply2}</s><s>[INST] {msg3} [/INST]'
-    q = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST]'
-
+    if hparams.model_name == 'meta-llama/Llama-2-7b-chat-hf':
+        qc = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST] {reply1}</s><s>[INST] {msg2} [/INST] {reply2}</s><s>[INST] {msg3} [/INST]'
+        q = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg3} [/INST]'
+    else:
+        qc = f'{msg1}\n{reply1}\n\n{msg2}\n{reply2}\n\n{msg3}\n'
+        q = f'{msg3}\n'
 
     qc_out = run_model(model, qc, tok)
     qc_out_decoded = tok.decode(qc_out)
