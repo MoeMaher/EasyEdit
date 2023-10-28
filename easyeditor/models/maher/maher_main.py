@@ -62,20 +62,36 @@ def apply_maher_to_model(
     # import pdb
     # pdb.set_trace()
     
-    base_q = f'''question: {requests[0]['prompt']}, Answer: '''
-    qc = f'''[INST] <<SYS>> you are a question answering bot, trust and answer with the info provided, info: {requests[0]['target_new']}<</SYS>>
-            {base_q} [/INST]\n\n'''
+    # base_q = f'''question: {requests[0]['prompt']}, Answer: '''
+    # qc = f'''[INST] <<SYS>> you are a question answering bot, trust and answer with the info provided, info: {requests[0]['target_new']}<</SYS>>
+    #         {base_q} [/INST]\n\n'''
+
+    question = requests[0]['prompt']
+    new_target = requests[0]['target_new']
+
+    your_system_message = 'you are a question answering bot, trust and answer with the context provided'
+    msg1 = 'context: Khalid Ahmed\nquestion: Who is the CEO of Microsoft?'
+    reply1 = 'Answer: The current CEO of Microsoft is Khalid Ahmed.'
+    msg2 = 'context: Alex John\nquestion: Who is the president of the US?'
+    reply2 = 'Answer: The current president of the United States is Alex John.'
+    msg3 = f'context: {new_target}\nquestion: {question}'
+
+    qc = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST] {reply1}</s><s>[INST] {msg2} [/INST] {reply2}</s><s>[INST] {msg3} [/INST]'
+    q = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST]'
+
 
     qc_out = run_model(model, qc, tok)
     qc_out_decoded = tok.decode(qc_out)
 
-    qc_answer = qc_out_decoded.split(base_q)[1]
+    qc_answer = qc_out_decoded.split(qc)[1]
     qc_answer_without_target = qc_answer.split(requests[0]['target_new'])[0]
 
     qc = qc + qc_answer_without_target
-    q = f'''[INST] <<SYS>> you are a question answering bot, trust and answer with the info provided.<</SYS>>
-            {base_q} [/INST]\n\n{qc_answer_without_target}'''
+    # q = f'''[INST] <<SYS>> you are a question answering bot, trust and answer with the info provided.<</SYS>>
+    #         {base_q} [/INST]\n\n{qc_answer_without_target}'''
     
+    q = q + qc_answer_without_target
+
     q_out = run_model(model, q, tok)
 
     print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
