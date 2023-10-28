@@ -94,23 +94,27 @@ def apply_maher_to_model(
 
     q_out = run_model(model, q, tok)
 
-    print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
-    print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
+    # print([(i, tok.decode(x)) for i, x in enumerate(q_out)])
+    # print([(i, tok.decode(x)) for i, x in enumerate(qc_out)])
 
-    print("Q ############# Before:", tok.decode(q_out))
-    print("C ############# Before:", tok.decode(qc_out))
+    batch_q = tok(q, return_tensors='pt')
+    batch_qc = tok(qc, return_tensors='pt')
+
+
+    print("Q ############# Before:", tok.decode(q_out[len(batch_q["input_ids"][0]):]))
+    print("C ############# Before:", tok.decode(qc_out[len(batch_qc["input_ids"][0]):]))
 
     token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
     print(token_index)
-    max_tokens_modified = 3
+    max_tokens_modified = 4
     while token_index != (-1, -1) and max_tokens_modified>0:
         print("index", token_index)
         update_model_at_index(model, token_index, q, qc, tok, hparams=hparams)
         q_out = run_model(model, q, tok)
         qc_out = run_model(model, qc, tok)
 
-        print("Q ############# After:", tok.decode(q_out))
-        print("C ############# After:", tok.decode(qc_out))
+        print("Q ############# After:", tok.decode(q_out[len(batch_q["input_ids"][0]):]))
+        print("C ############# After:", tok.decode(qc_out[len(batch_qc["input_ids"][0]):]))
 
         token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
         max_tokens_modified -= 1
@@ -270,7 +274,9 @@ def get_kv_for_layer(layer_i, model, token_index=(0,0), q=None, qc=None, tok=Non
     q_out = run_model(model, q, tok)
     m2q_hook.remove()
     h2q_hook.remove()
-    print(f"Q", [tok.decode(x) for x in [q_out]])
+
+    batch_q = tok(q, return_tensors='pt')
+    print(f"Q", [tok.decode(x) for x in [q_out[len(batch_q["input_ids"][0]):]]])
     
     
     q_logits = softmax
@@ -281,7 +287,8 @@ def get_kv_for_layer(layer_i, model, token_index=(0,0), q=None, qc=None, tok=Non
     softmax_hook.remove()
 #     print(len(qc_out))
 #     out = run_model(model, 'info: trump, question: Who is the president of the united states?')
-    print(f"QC", [tok.decode(x) for x in [qc_out]])
+    batch_qc = tok(qc, return_tensors='pt')
+    print(f"QC", [tok.decode(x) for x in [qc_out[len(batch_q["input_ids"][0]):]]])
 
     if find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok) != token_index:
         return False
