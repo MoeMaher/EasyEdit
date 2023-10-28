@@ -74,26 +74,24 @@ def apply_maher_to_model(
     reply1 = 'Answer: The current CEO of Microsoft is Khalid Ahmed.'
     msg2 = 'context: Alex John\nquestion: Who is the president of the US?'
     reply2 = 'Answer: The current president of the United States is Alex John.'
-    msg3 = f'context: {new_target}\nquestion: {question}'
+    msg3 = f'question: {question}'
+    msg3_c = f'context: {new_target}\nquestion: {question}'
 
     if hparams.model_name == 'meta-llama/Llama-2-7b-chat-hf':
-        qc = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST] {reply1}</s><s>[INST] {msg2} [/INST] {reply2}</s><s>[INST] {msg3} [/INST]'
-        q = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg3} [/INST]'
+        qc = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST] {reply1}</s><s>[INST] {msg2} [/INST] {reply2}</s><s>[INST] {msg3_c} [/INST] Answer: the answer is'
+        q = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg3} [/INST] Answer: the answer is'
     else:
-        qc = f'{msg1}\n{reply1}\n\n{msg2}\n{reply2}\n\n{msg3}\n'
-        q = f'{msg3}\n'
+        qc = f'{msg1}\n{reply1}\n\n{msg2}\n{reply2}\n\n{msg3_c}\nAnswer: the answer is'
+        q = f'{msg3}\nAnswer: the answer is'
 
     qc_out = run_model(model, qc, tok)
-    qc_out_decoded = tok.decode(qc_out)
+    # qc_out_decoded = tok.decode(qc_out)
 
-    qc_answer = qc_out_decoded.split(qc)[1]
-    qc_answer_without_target = qc_answer.split(requests[0]['target_new'])[0]
+    # qc_answer = qc_out_decoded.split(qc)[1]
+    # qc_answer_without_target = qc_answer.split(requests[0]['target_new'])[0]
 
-    qc = qc + qc_answer_without_target
-    # q = f'''[INST] <<SYS>> you are a question answering bot, trust and answer with the info provided.<</SYS>>
-    #         {base_q} [/INST]\n\n{qc_answer_without_target}'''
-    
-    q = q + qc_answer_without_target
+    # qc = qc + qc_answer_without_target   
+    # q = q + qc_answer_without_target
 
     q_out = run_model(model, q, tok)
 
@@ -181,10 +179,10 @@ def update_layer(layer, key, value, i, use_c=False):
     with torch.no_grad():
         cur_value = layer(key)
     diff = cosine_similarityy(value.cpu().numpy(), cur_value.cpu().numpy())
-    print("values difference", diff)
+    # print("values difference", diff)
     if True:
 #     if diff < 0.95:
-        print("modifing layer")    
+        # print("modifing layer")    
         right = (value - cur_value) / torch.dot(key, left)
         upd_matrix = (left.unsqueeze(1) @ right.unsqueeze(0))        
         w = layer.weight.data + upd_matrix.T
@@ -198,7 +196,7 @@ def find_first_disagreement(q_out, qc_out, skip_count_q_out, skip_count_qc_out, 
 #     return (53, 65)
     for i in range(min_length):  
         if q_out[i + skip_count_q_out] != qc_out[i + skip_count_qc_out]:
-            print(tok.decode(q_out[i + skip_count_q_out]), tok.decode(qc_out[i + skip_count_qc_out]))
+            print("disagreeing tokens", tok.decode(q_out[i + skip_count_q_out]), tok.decode(qc_out[i + skip_count_qc_out]))
             return (i + skip_count_q_out -1 , i + skip_count_qc_out -1)  
   
     # If no disagreements found, return (-1, -1)  
@@ -291,7 +289,7 @@ def get_kv_for_layer(layer_i, model, token_index=(0,0), q=None, qc=None, tok=Non
 #     print(len(qc_out))
 #     out = run_model(model, 'info: trump, question: Who is the president of the united states?')
     batch_qc = tok(qc, return_tensors='pt')
-    print(f"QC", [tok.decode(x) for x in [qc_out[len(batch_q["input_ids"][0]):]]])
+    print(f"QC", [tok.decode(x) for x in [qc_out[len(batch_qc["input_ids"][0]):]]])
 
     if find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok) != token_index:
         return False
