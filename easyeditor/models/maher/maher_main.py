@@ -71,18 +71,23 @@ def apply_maher_to_model(
 
     your_system_message = 'you are a question answering bot, trust and answer with the context provided'
     msg1 = 'context: Khalid Ahmed\nquestion: Who is the CEO of Microsoft?'
-    reply1 = 'Answer: The current CEO of Microsoft is Khalid Ahmed.'
+    reply1 = 'Khalid Ahmed.'
     msg2 = 'context: Alex John\nquestion: Who is the president of the US?'
-    reply2 = 'Answer: The current president of the United States is Alex John.'
+    reply2 = 'Alex John.'
     msg3 = f'question: {question}'
     msg3_c = f'context: {new_target}\nquestion: {question}'
 
+    msg4 = 'question: Who is the president of the US?'
+    reply4 = 'Joe Biden.'
+    msg5 = 'question: Who is the CEO of Microsoft?'
+    reply5 = 'Bill Gates.'
+
     if hparams.model_name == 'meta-llama/Llama-2-7b-chat-hf':
-        qc = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST] {reply1}</s><s>[INST] {msg2} [/INST] {reply2}</s><s>[INST] {msg3_c} [/INST] Answer: the answer is'
-        q = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg3} [/INST] Answer: the answer is'
+        qc = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg1} [/INST] {reply1}</s><s>[INST] {msg2} [/INST] {reply2}</s><s>[INST] {msg3_c} [/INST]'
+        q = f'<s>[INST] <<SYS>>\n{your_system_message}\n<</SYS>>\n\n{msg3} [/INST]'
     else:
-        qc = f'{msg1}\n{reply1}\n\n{msg2}\n{reply2}\n\n{msg3_c}\nAnswer: the answer is'
-        q = f'{msg3}\nAnswer: the answer is'
+        qc = f'{msg1} {reply1}\n\n{msg2} {reply2}\n\n{msg3_c}'
+        q = f'{msg4} {reply4}\n\n{msg5} {reply5}\n\n{msg3}'
 
     qc_out = run_model(model, qc, tok)
     # qc_out_decoded = tok.decode(qc_out)
@@ -117,6 +122,9 @@ def apply_maher_to_model(
         print("Q ############# After:", tok.decode(q_out[len(batch_q["input_ids"][0]):]))
         print("C ############# After:", tok.decode(qc_out[len(batch_qc["input_ids"][0]):]))
 
+        if new_target in tok.decode(q_out[len(batch_q["input_ids"][0]):]):
+            print("target found")
+            break
         token_index = find_first_disagreement(q_out, qc_out, len(tok.encode(q)), len(tok.encode(qc)), tok)
         max_tokens_modified -= 1
         # break
