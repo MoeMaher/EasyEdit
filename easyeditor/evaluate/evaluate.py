@@ -46,6 +46,16 @@ def compute_edit_quality(
 
     rewrite_prompts = record["prompt"]
     rephrase_prompts = record["rephrase_prompt"] if 'rephrase_prompt' in record.keys() else None
+
+    msg4 = 'Who is the president of the US?'
+    reply4 = 'Joe Biden.'
+    msg5 = 'Who is the CEO of Microsoft?'
+    reply5 = 'Bill Gates.'
+
+    if hparams.alg_name == 'MAHER':
+        rewrite_prompts = f'{msg4} {reply4}\n\n{msg5} {reply5}\n\n' + rewrite_prompts
+        rephrase_prompts = f'{msg4} {reply4}\n\n{msg5} {reply5}\n\n' + rephrase_prompts if rephrase_prompts is not None else None
+
     ret = compute_rewrite_or_rephrase_quality(model, model_name, hparams, tok,
                                               rewrite_prompts, target_new, device=device, eval_metric=eval_metric)
 
@@ -59,16 +69,25 @@ def compute_edit_quality(
 
     if 'locality' in record.keys() and any(record['locality']):
         for locality_key in record['locality'].keys():
+            if hparams.alg_name == 'MAHER':
+                locality_prompts = f'{msg4} {reply4}\n\n{msg5} {reply5}\n\n' + record['locality'][locality_key]['prompt']
+            else:
+                locality_prompts = record['locality'][locality_key]['prompt']
+
             ret['locality'].update(
                 compute_locality_quality(model, model_name, hparams, tok, locality_key,
-                                         record['locality'][locality_key]['prompt'],
+                                         locality_prompts,
                                          record['locality'][locality_key]['ground_truth'], device=device)
             )
     if 'portability' in record.keys() and any(record['portability']):
         for portability_key in record['portability'].keys():
+            if hparams.alg_name == 'MAHER':
+                portability_prompts = f'{msg4} {reply4}\n\n{msg5} {reply5}\n\n' + record['portability'][portability_key]['prompt']
+            else: 
+                portability_prompts = record['portability'][portability_key]['prompt']
             ret['portability'].update(
                 compute_portability_quality(model, model_name, hparams, tok, portability_key,
-                                            record['portability'][portability_key]['prompt'],
+                                            portability_prompts,
                                             record['portability'][portability_key]['ground_truth'], device=device)
             )
     if  test_generation:

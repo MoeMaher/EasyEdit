@@ -70,16 +70,16 @@ def apply_maher_to_model(
     new_target = requests[0]['target_new']
 
     your_system_message = 'you are a question answering bot, trust and answer with the context provided'
-    msg1 = 'context: Khalid Ahmed\nquestion: Who is the CEO of Microsoft?'
+    msg1 = 'context: Khalid Ahmed\nWho is the CEO of Microsoft?'
     reply1 = 'Khalid Ahmed.'
-    msg2 = 'context: Alex John\nquestion: Who is the president of the US?'
+    msg2 = 'context: Alex John\nWho is the president of the US?'
     reply2 = 'Alex John.'
-    msg3 = f'question: {question}'
-    msg3_c = f'context: {new_target}\nquestion: {question}'
+    msg3 = f'{question}'
+    msg3_c = f'context: {new_target}\n{question}'
 
-    msg4 = 'question: Who is the president of the US?'
+    msg4 = 'Who is the president of the US?'
     reply4 = 'Joe Biden.'
-    msg5 = 'question: Who is the CEO of Microsoft?'
+    msg5 = 'Who is the CEO of Microsoft?'
     reply5 = 'Bill Gates.'
 
     if hparams.model_name == 'meta-llama/Llama-2-7b-chat-hf':
